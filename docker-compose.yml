@@ -1,0 +1,10 @@
+version: "3.9" 
+services:
+  python-person-api:
+    build: ./python-person-api
+    ports:
+      - "8000:8000"
+  person-db:
+    build: ./person-db
+    ports:
+      - "27017:27017"
