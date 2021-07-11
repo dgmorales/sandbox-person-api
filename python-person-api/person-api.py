@@ -1,40 +1,49 @@
 #!/usr/bin/env python
 
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
+from person_store import UserStore
+
+DB_CONN_STR = os.environ['DB_CONN_STR']
+# "mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/myFirstDatabase"
 
 app = FastAPI()
+db = UserStore(DB_CONN_STR)
 
 
 class User(BaseModel):
-    nome: str
-    sobrenome: str
-    CPF: str
+    firstName: str
+    lastName: str
+    cpf: str
     email: str
-    data: str
+    birthDate: str
 
 
-database = [
-    User(nome="teste1", sobrenome="testado1", CPF="999.999.999-99",
-         email="teste1@hotmail.com", data="04/04/1994"),
-    User(nome="teste2", sobrenome="testado2", CPF="111.111.111-11",
-         email="teste2@hotmail.com", data="03/03/1999")
-]
+def user_from_db(user_db_item):
+    """ Transform a mongo document on a User class object.
+
+    A hack while I do not understand enough of fastapi and pydantic to do it better."
+    """
+    return User(firstName=user_db_item['firstName'],
+                lastName=user_db_item['lastName'],
+                cpf=user_db_item['cpf'],
+                email=user_db_item['email'],
+                birthDate=user_db_item['birthDate'],
+                )
 
 
 @app.get("/users")
 def get_users():
-    return database
+    return [user_from_db(item) for item in db.get_all_users()]
 
 
 @app.post("/users/insert_user")
 def insert_user(user: User):
-    database.append(user)
+    db.insert_user(user)
     return user
 
 
-@app.get("/users/{CPF_user}")
-def get_user_cpf(CPF_user: str):
-    for user in database:
-        if(user.CPF == CPF_user):
-            return user
+@app.get("/users/{cpf}")
+def get_user_cpf(cpf: str):
+    return user_from_db(db.get_user(cpf))

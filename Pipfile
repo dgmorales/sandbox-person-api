@@ -4,11 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "*"
-uvicorn = "*"
-newrelic = "*"
-pymongo = "*"
-dnspython = "*"
 
 [dev-packages]
 
