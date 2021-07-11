@@ -4,6 +4,8 @@ services:
     build: ./python-person-api
     ports:
       - "8000:8000"
+    environment:
+      DB_CONN_STR: mongodb://person-db:27017/
   person-db:
     build: ./person-db
     ports:
