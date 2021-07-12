@@ -32,6 +32,9 @@ class UserStore(metaclass=SingletonMeta):
     def insert_user(self, user):
         self.db.users.insert_one(dict(user))
 
+    def update_user(self, cpf, user):
+        self.db.users.replace_one({"cpf": cpf}, dict(user))
+
     def get_user(self, cpf):
         return self.db.users.find_one({"cpf": cpf})
 

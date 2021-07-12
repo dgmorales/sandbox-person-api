@@ -38,9 +38,15 @@ def get_users():
     return [user_from_db(item) for item in db.get_all_users()]
 
 
-@app.post("/users/insert_user")
-def insert_user(user: User):
+@app.post("/users")
+def post_user(user: User):
     db.insert_user(user)
+    return user
+
+
+@app.put("/users/{cpf}")
+def put_user(cpf: str, user: User):
+    db.update_user(cpf, user)
     return user
 
 
