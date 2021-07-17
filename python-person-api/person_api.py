@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel
 from person_store import UserStore
 
@@ -38,18 +38,32 @@ def get_users():
     return [user_from_db(item) for item in db.get_all_users()]
 
 
-@app.post("/users")
+@app.post("/users", status_code=status.HTTP_201_CREATED)
 def post_user(user: User):
+    if db.get_user(user.cpf):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Duplicate user. The CPF is already registered.")
     db.insert_user(user)
     return user
 
 
 @app.put("/users/{cpf}")
 def put_user(cpf: str, user: User):
+    if cpf != user.cpf:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="CPF in the path does not match CPF in body.")
+
+    if not db.get_user(cpf):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User does not exist.")
     db.update_user(cpf, user)
     return user
 
 
 @app.get("/users/{cpf}")
-def get_user_cpf(cpf: str):
-    return user_from_db(db.get_user(cpf))
+def get_user(cpf: str):
+    u = db.get_user(cpf)
+    if not u:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User does not exist.")
+    return user_from_db(u)
