@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import os
-from fastapi import FastAPI, status, HTTPException
+
+from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
+
 from person_store import UserStore
 
 DB_CONN_STR = os.environ['DB_CONN_STR']
