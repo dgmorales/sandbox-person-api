@@ -7,8 +7,12 @@ from pydantic import BaseModel
 
 from person_store import UserStore
 
-DB_CONN_STR = os.environ['DB_CONN_STR']
-# "mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/myFirstDatabase"
+if 'DB_CONN_STR' in os.environ:
+    DB_CONN_STR = os.environ['DB_CONN_STR']
+else:
+    # TODO: maybe we should raise an exception here
+    DB_CONN_STR = 'mongodb://localhost:27017/'  # default
+
 
 app = FastAPI()
 
