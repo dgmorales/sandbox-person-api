@@ -11,7 +11,6 @@ DB_CONN_STR = os.environ['DB_CONN_STR']
 # "mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/myFirstDatabase"
 
 app = FastAPI()
-db = UserStore(DB_CONN_STR)
 
 
 class User(BaseModel):
@@ -37,11 +36,13 @@ def user_from_db(user_db_item):
 
 @app.get("/users")
 def get_users():
+    db = UserStore(DB_CONN_STR)
     return [user_from_db(item) for item in db.get_all_users()]
 
 
 @app.post("/users", status_code=status.HTTP_201_CREATED)
 def post_user(user: User):
+    db = UserStore(DB_CONN_STR)
     if db.get_user(user.cpf):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Duplicate user. The CPF is already registered.")
@@ -51,6 +52,7 @@ def post_user(user: User):
 
 @app.put("/users/{cpf}")
 def put_user(cpf: str, user: User):
+    db = UserStore(DB_CONN_STR)
     if cpf != user.cpf:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="CPF in the path does not match CPF in body.")
@@ -64,6 +66,7 @@ def put_user(cpf: str, user: User):
 
 @app.get("/users/{cpf}")
 def get_user(cpf: str):
+    db = UserStore(DB_CONN_STR)
     u = db.get_user(cpf)
     if not u:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
