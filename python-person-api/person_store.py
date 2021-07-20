@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from pymongo import MongoClient
 
 
@@ -27,6 +28,7 @@ class SingletonMeta(type):
 class UserStore(metaclass=SingletonMeta):
     def __init__(self, conn_string):
         self.client = MongoClient(conn_string)
+        print("[PID %d] New MongoDB connection opened." % os.getpid())
         self.db = self.client['people']
 
     def insert_user(self, user):
