@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import uvicorn
+
 
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
@@ -76,3 +78,7 @@ def get_user(cpf: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User does not exist.")
     return user_from_db(u)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
