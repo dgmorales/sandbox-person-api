@@ -14,6 +14,8 @@ dnspython = "*"
 pytest = "*"
 autopep8 = "*"
 requests = "*"
+pytest-docker-compose = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.9"
