@@ -1,11 +1,12 @@
 {
 	"python.testing.pytestArgs": [
-		"python-person-api/tests"
+		"tests"
 	],
 	"python.testing.unittestEnabled": false,
 	"python.testing.nosetestsEnabled": false,
 	"python.testing.pytestEnabled": true,
 	"cSpell.words": [
-		"myid"
+		"myid",
+		"persondb"
 	]
 }

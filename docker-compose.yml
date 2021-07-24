@@ -1,12 +1,14 @@
-version: "3.9" 
+version: "3.9"
 services:
-  python-person-api:
-    build: ./python-person-api
+  personapi:
+    build: .
     ports:
       - "8000:8000"
     environment:
-      DB_CONN_STR: mongodb://person-db:27017/
-  person-db:
-    build: ./person-db
+      DB_CONN_STR: mongodb://persondb:27017/
+  persondb:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
     ports:
       - "27017:27017"

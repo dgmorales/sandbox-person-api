@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from pymongo import MongoClient
 from time import sleep
 
-from person_api import app
+from personapi.api import app
 
 pytest_plugins = ["docker_compose"]
 

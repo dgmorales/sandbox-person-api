@@ -9,6 +9,7 @@ uvicorn = "*"
 newrelic = "*"
 pymongo = "*"
 dnspython = "*"
+personapi= {editable = true, path = "."}
 
 [dev-packages]
 pytest = "*"

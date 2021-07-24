@@ -10,10 +10,9 @@
 			"request": "launch",
 			"module": "uvicorn",
 			"args": [
-				"person_api:app"
+				"api:app"
 			],
 			"jinja": true,
-			"cwd": "${workspaceFolder}/python-person-api"
 		}
 	]
 }

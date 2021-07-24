@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 
-from person_store import UserStore
+from .store import UserStore
 
 if 'DB_CONN_STR' in os.environ:
     DB_CONN_STR = os.environ['DB_CONN_STR']

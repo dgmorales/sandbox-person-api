@@ -1,6 +1,6 @@
 import random
 
-from person_store import SingletonMeta
+from personapi.store import SingletonMeta
 
 
 def test_singleton():

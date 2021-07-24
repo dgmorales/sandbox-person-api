@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bb04435817e3db4dca212dabd6f9fb7f036bbc612d86374fc41ce81007078174"
+            "sha256": "e636f154def315ce588d5682a4b088fe06698471518f2951b5a51a3b23895fbd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -69,6 +69,10 @@
             ],
             "index": "pypi",
             "version": "==6.4.4.161"
+        },
+        "personapi": {
+            "editable": true,
+            "path": "."
         },
         "pydantic": {
             "hashes": [
