@@ -11,7 +11,7 @@ from .store import UserStore
 
 if 'DB_CONN_STR' in os.environ:
     DB_CONN_STR = os.environ['DB_CONN_STR']
-else:
+else:   # pragma: no cover
     # TODO: maybe we should raise an exception here
     DB_CONN_STR = 'mongodb://localhost:27017/'  # default
 
@@ -80,5 +80,17 @@ def get_user(cpf: str):
     return user_from_db(u)
 
 
-if __name__ == "__main__":
+@app.delete("/users/{cpf}")
+def get_user(cpf: str):
+    db = UserStore(DB_CONN_STR)
+    u = db.get_user(cpf)
+    if not u:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User does not exist.")
+    else:
+        db.delete_user(cpf)
+    return user_from_db(u)
+
+
+if __name__ == "__main__":  # pragma: no cover
     uvicorn.run(app, host="127.0.0.1", port=8000)

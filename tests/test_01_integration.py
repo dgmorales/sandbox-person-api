@@ -1,4 +1,5 @@
 import random
+import copy
 
 import pytest
 from fastapi import status
@@ -10,6 +11,22 @@ from personapi.api import app
 
 pytest_plugins = ["docker_compose"]
 
+users = [
+    {
+        "firstName": "Mickey",
+        "lastName": "Mouse",
+        "cpf": "000.000.0001-11",
+        "email": "mickey.mouse@disney.com",
+        "birthDate": "04/04/1960",
+    },
+    {
+        "firstName": "Minnie",
+        "lastName": "Mouse",
+        "cpf": "000.000.0002-22",
+        "email": "minnie.mouse@disney.com",
+        "birthDate": "03/03/1966",
+    }
+]
 
 duplicate_user = {
     "firstName": "Mickey",
@@ -39,36 +56,75 @@ nonexistent_user = {
 }
 
 
-# def test_user_post():
-#     response = client.post("/users", json=new_user)
-#     assert response.status_code == status.HTTP_201_CREATED
-#     response = client.get("/users/" + new_user['cpf'])
-#     assert response.status_code == status.HTTP_200_OK
-#     assert response.json() == new_user
-
 @pytest.fixture(scope="module")
-def wait_for_db(module_scoped_container_getter):
+def ready_db(module_scoped_container_getter):
     service = module_scoped_container_getter.get("person-db").network_info[0]
     for i in range(15):
         try:
             client = MongoClient('mongodb://%s:%s/' %
                                  (service.hostname, service.host_port))
             print('Mongo is up')
-            return
+            return client
         except Exception as e:
             print(e)
             print("Database is not available. Sleep for 1 sec")
             sleep(1)
+    return None
 
 
 @pytest.fixture(scope="module")
-def testclient(wait_for_db):
+def primed_db(ready_db):
+    "Returns a client connection to a database primed with initial data for the tests"
+    # must deepcopy because insert_many changes the dict objects inserting _id
+    ready_db['people'].users.insert_many(copy.deepcopy(users))
+    return ready_db
+
+
+@pytest.fixture(scope="module")
+def testclient(primed_db):
     return TestClient(app)
+
+
+def test_get_users(testclient):
+    print(users)
+    response = testclient.get("/users/")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()) == len(users)
+
+
+def test_get_user(testclient):
+    user = users[0]
+    response = testclient.get("/users/" + user['cpf'])
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == user
+
+
+def test_user_post_get_delete(testclient):
+    response = testclient.post("/users", json=new_user)
+    assert response.status_code == status.HTTP_201_CREATED
+    response = testclient.get("/users/" + new_user['cpf'])
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == new_user
+    response = testclient.delete("/users/" + new_user['cpf'])
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == new_user
 
 
 def test_user_post_duplicate(testclient):
     response = testclient.post("/users", json=duplicate_user)
     assert response.status_code == status.HTTP_409_CONFLICT
+
+
+def test_user_put(testclient):
+    user = users[0]
+    user['lastName'] += " Changed"
+    response = testclient.put(
+        "/users/" + user['cpf'], json=user)
+    assert response.status_code == status.HTTP_200_OK
+
+    response = testclient.get("/users/" + user['cpf'])
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == user
 
 
 def test_user_put_nonexistent(testclient):
@@ -94,4 +150,9 @@ def test_user_put_mismatch(testclient):
 
 def test_user_get_nonexistent(testclient):
     response = testclient.get("/users/" + nonexistent_user['cpf'])
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_user_delete_nonexistent(testclient):
+    response = testclient.delete("/users/" + nonexistent_user['cpf'])
     assert response.status_code == status.HTTP_404_NOT_FOUND
