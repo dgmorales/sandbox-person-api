@@ -8,6 +8,7 @@ from pymongo import MongoClient
 from time import sleep
 
 from personapi.api import app
+from personapi.store import Settings, get_settings
 
 pytest_plugins = ["docker_compose"]
 
@@ -57,31 +58,39 @@ nonexistent_user = {
 
 
 @pytest.fixture(scope="module")
-def ready_db(module_scoped_container_getter):
+def testdb(module_scoped_container_getter):
+    """Returns the connection string to a db running on docker compose.
+
+    - Spins up a test db with docker compose
+    - Wait for it to be up
+    - Prime it with initial data
+    - Returns the conn string to it
+    """
     service = module_scoped_container_getter.get("person-db").network_info[0]
+    db_conn_str = 'mongodb://%s:%s/' % (service.hostname, service.host_port)
     for i in range(15):
         try:
-            client = MongoClient('mongodb://%s:%s/' %
-                                 (service.hostname, service.host_port))
+            client = MongoClient(db_conn_str)
             print('Mongo is up')
-            return client
+            # prime db
+            # must deepcopy because insert_many changes the dict objects inserting _id
+            client['people'].users.insert_many(copy.deepcopy(users))
+            return db_conn_str
         except Exception as e:
             print(e)
             print("Database is not available. Sleep for 1 sec")
             sleep(1)
-    return None
+    return None  # should throw error
 
 
 @pytest.fixture(scope="module")
-def primed_db(ready_db):
-    "Returns a client connection to a database primed with initial data for the tests"
-    # must deepcopy because insert_many changes the dict objects inserting _id
-    ready_db['people'].users.insert_many(copy.deepcopy(users))
-    return ready_db
+def testclient(testdb):
 
+    def get_test_settings():
+        "Function to override settings using the conn string returned by testdb fixture"
+        return Settings(db_conn_str=testdb)
 
-@pytest.fixture(scope="module")
-def testclient(primed_db):
+    app.dependency_overrides[get_settings] = get_test_settings
     return TestClient(app)
 
 
