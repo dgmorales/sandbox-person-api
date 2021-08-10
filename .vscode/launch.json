@@ -10,7 +10,7 @@
 			"request": "launch",
 			"module": "uvicorn",
 			"args": [
-				"api:app"
+				"personapi.api:app"
 			],
 			"jinja": true,
 		}
