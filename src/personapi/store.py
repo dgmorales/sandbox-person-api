@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     db_conn_str: str = 'mongodb://localhost:27017/'
 
 
-def get_settings():
+def get_settings():  # pragma: no cover - this is overridden in tests
     # using Depends(Settings) for some reason breaks reading the setting from envvar, so we have this function
     return Settings()
 
