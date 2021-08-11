@@ -19,7 +19,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-pipenv-${{ hashFiles('Pipfile.lock')
+          key: ${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-pipenv-${{ hashFiles('Pipfile.lock') }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
