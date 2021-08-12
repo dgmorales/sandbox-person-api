@@ -17,7 +17,8 @@ run-tests:
 
 checks:
 	pipenv run flake8
-	pipenv run bandit -r .
+	pipenv run black --check .
+	pipenv run bandit -c bandit.yml -qr .
 
 full-check: check run-tests
 
