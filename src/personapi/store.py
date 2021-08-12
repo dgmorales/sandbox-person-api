@@ -15,11 +15,12 @@ class User(BaseModel):
 
 
 class Settings(BaseSettings):
-    db_conn_str: str = 'mongodb://localhost:27017/'
+    db_conn_str: str = "mongodb://localhost:27017/"
 
 
 def get_settings():  # pragma: no cover - this is overridden in tests
-    # using Depends(Settings) for some reason breaks reading the setting from envvar, so we have this function
+    # using Depends(Settings) for some reason breaks reading the setting from
+    # envvar, so we have this function
     return Settings()
 
 
@@ -28,16 +29,17 @@ def get_db(settings: Settings = Depends(get_settings)):
 
 
 def user_from_db(user_db_item):
-    """ Transform a mongo document on a User class object.
+    """Transform a mongo document on a User class object.
 
     A hack while I do not understand enough of fastapi and pydantic to do it better."
     """
-    return User(firstName=user_db_item['firstName'],
-                lastName=user_db_item['lastName'],
-                cpf=user_db_item['cpf'],
-                email=user_db_item['email'],
-                birthDate=user_db_item['birthDate'],
-                )
+    return User(
+        firstName=user_db_item["firstName"],
+        lastName=user_db_item["lastName"],
+        cpf=user_db_item["cpf"],
+        email=user_db_item["email"],
+        birthDate=user_db_item["birthDate"],
+    )
 
 
 # thread unsafe singleton from https://refactoring.guru/design-patterns/singleton/python
@@ -65,7 +67,7 @@ class UserStore(metaclass=SingletonMeta):
     def __init__(self, conn_string):
         print("[PID %d] Connecting to %s" % (os.getpid(), conn_string))
         self.client = MongoClient(conn_string)
-        self.db = self.client['people']
+        self.db = self.client["people"]
         print("[PID %d] New MongoDB connection opened." % os.getpid())
 
     def insert_user(self, user):
@@ -81,5 +83,6 @@ class UserStore(metaclass=SingletonMeta):
         return self.db.users.find_one({"cpf": cpf})
 
     def get_all_users(self):
-        # this would not be wise on a huge db (loads all db in memory at once), but will suffice here
+        # this would not be wise on a huge db (loads all db in memory at once),
+        # but will suffice here
         return list(self.db.users.find())

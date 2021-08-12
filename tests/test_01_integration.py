@@ -1,4 +1,3 @@
-import random
 import copy
 
 import pytest
@@ -26,7 +25,7 @@ users = [
         "cpf": "000.000.0002-22",
         "email": "minnie.mouse@disney.com",
         "birthDate": "03/03/1966",
-    }
+    },
 ]
 
 duplicate_user = {
@@ -67,14 +66,14 @@ def testdb(module_scoped_container_getter):
     - Returns the conn string to it
     """
     service = module_scoped_container_getter.get("person-db").network_info[0]
-    db_conn_str = 'mongodb://%s:%s/' % (service.hostname, service.host_port)
+    db_conn_str = "mongodb://%s:%s/" % (service.hostname, service.host_port)
     for i in range(15):
         try:
             client = MongoClient(db_conn_str)
-            print('Mongo is up')
+            print("Mongo is up")
             # prime db
             # must deepcopy because insert_many changes the dict objects inserting _id
-            client['people'].users.insert_many(copy.deepcopy(users))
+            client["people"].users.insert_many(copy.deepcopy(users))
             return db_conn_str
         except Exception as e:
             print(e)
@@ -85,7 +84,6 @@ def testdb(module_scoped_container_getter):
 
 @pytest.fixture(scope="module")
 def testclient(testdb):
-
     def get_test_settings():
         "Function to override settings using the conn string returned by testdb fixture"
         return Settings(db_conn_str=testdb)
@@ -103,7 +101,7 @@ def test_get_users(testclient):
 
 def test_get_user(testclient):
     user = users[0]
-    response = testclient.get("/users/" + user['cpf'])
+    response = testclient.get("/users/" + user["cpf"])
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == user
 
@@ -111,10 +109,10 @@ def test_get_user(testclient):
 def test_user_post_get_delete(testclient):
     response = testclient.post("/users", json=new_user)
     assert response.status_code == status.HTTP_201_CREATED
-    response = testclient.get("/users/" + new_user['cpf'])
+    response = testclient.get("/users/" + new_user["cpf"])
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == new_user
-    response = testclient.delete("/users/" + new_user['cpf'])
+    response = testclient.delete("/users/" + new_user["cpf"])
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == new_user
 
@@ -126,12 +124,11 @@ def test_user_post_duplicate(testclient):
 
 def test_user_put(testclient):
     user = users[0]
-    user['lastName'] += " Changed"
-    response = testclient.put(
-        "/users/" + user['cpf'], json=user)
+    user["lastName"] += " Changed"
+    response = testclient.put("/users/" + user["cpf"], json=user)
     assert response.status_code == status.HTTP_200_OK
 
-    response = testclient.get("/users/" + user['cpf'])
+    response = testclient.get("/users/" + user["cpf"])
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == user
 
@@ -141,7 +138,8 @@ def test_user_put_nonexistent(testclient):
     # for now, we don't
 
     response = testclient.put(
-        "/users/" + nonexistent_user['cpf'], json=nonexistent_user)
+        "/users/" + nonexistent_user["cpf"], json=nonexistent_user
+    )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -150,18 +148,19 @@ def test_user_put_mismatch(testclient):
     # for now, we do, and must return an error if they differ
 
     # this asserts the test sanity itself
-    assert mismatched_nonexistent_user_cpf != nonexistent_user['cpf']
+    assert mismatched_nonexistent_user_cpf != nonexistent_user["cpf"]
 
     response = testclient.put(
-        "/users/" + mismatched_nonexistent_user_cpf, json=nonexistent_user)
+        "/users/" + mismatched_nonexistent_user_cpf, json=nonexistent_user
+    )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_user_get_nonexistent(testclient):
-    response = testclient.get("/users/" + nonexistent_user['cpf'])
+    response = testclient.get("/users/" + nonexistent_user["cpf"])
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_user_delete_nonexistent(testclient):
-    response = testclient.delete("/users/" + nonexistent_user['cpf'])
+    response = testclient.delete("/users/" + nonexistent_user["cpf"])
     assert response.status_code == status.HTTP_404_NOT_FOUND

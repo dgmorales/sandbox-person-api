@@ -10,5 +10,5 @@ def test_singleton():
 
     a = TestSingleton()
     b = TestSingleton()
-    assert(a == b)
-    assert(a.myid == b.myid)
+    assert a == b
+    assert a.myid == b.myid
