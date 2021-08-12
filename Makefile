@@ -16,8 +16,8 @@ run-tests:
 	pipenv run pytest tests/
 
 checks:
-	flake8
-	bandit -r .
+	pipenv run flake8
+	pipenv run bandit -r .
 
 full-check: check run-tests
 
