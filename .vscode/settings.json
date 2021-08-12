@@ -9,5 +9,15 @@
 		"myid",
 		"persondb",
 		"testdb"
+	],
+	"[python]": {
+		"editor.detectIndentation": false,
+		"editor.insertSpaces": true,
+		"editor.tabSize": 4
+	},
+	"python.linting.flake8Enabled": true,
+	"python.linting.banditEnabled": true,
+	"python.linting.banditArgs": [
+		"-c bandit.yml"
 	]
 }

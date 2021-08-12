@@ -15,6 +15,12 @@ requirements.txt: Pipfile
 run-tests:
 	pipenv run pytest tests/
 
+checks:
+	flake8
+	bandit -r .
+
+full-check: check run-tests
+
 up:
 	docker compose up
 
