@@ -52,6 +52,8 @@ def test_invalid_birthdate_fmt():
         "0000-00-00",
         "2000-02-30",
         "2000-13-01",
+        "2000-13-01",
+        "2000-12-01 00:00",
     ]  # date must be in format YYYY-MM-DD (int & floats converted to unix time)
     for item in invalid_dates:
         invalid_user["birthDate"] = item
