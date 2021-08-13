@@ -235,6 +235,10 @@
             "index": "pypi",
             "version": "==3.12.0"
         },
+        "sanitized-package": {
+            "editable": true,
+            "path": "."
+        },
         "starlette": {
             "hashes": [
                 "sha256:3c8e48e52736b3161e34c9f0e8153b4f32ec5d8995a3ee1d59410d92f75162ed",
@@ -253,11 +257,11 @@
         },
         "uvicorn": {
             "hashes": [
-                "sha256:2a76bb359171a504b3d1c853409af3adbfa5cef374a4a59e5881945a97a93eae",
-                "sha256:45ad7dfaaa7d55cab4cd1e85e03f27e9d60bc067ddc59db52a2b0aeca8870292"
+                "sha256:17f898c64c71a2640514d4089da2689e5db1ce5d4086c2d53699bf99513421c1",
+                "sha256:d9a3c0dd1ca86728d3e235182683b4cf94cd53a867c288eaeca80ee781b2caff"
             ],
             "index": "pypi",
-            "version": "==0.14.0"
+            "version": "==0.15.0"
         }
     },
     "develop": {
@@ -267,14 +271,6 @@
                 "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"
             ],
             "version": "==1.4.4"
-        },
-        "appnope": {
-            "hashes": [
-                "sha256:93aa393e9d6c54c5cd570ccadd8edad61ea0c4b9ea7a01409020c9aa019eb442",
-                "sha256:dd83cd4b5b460958838f6eb3000c660b1f9caf2a5b1de4264e941512f603258a"
-            ],
-            "markers": "sys_platform == 'darwin' and platform_system == 'Darwin'",
-            "version": "==0.1.2"
         },
         "attrs": {
             "hashes": [
