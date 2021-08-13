@@ -10,6 +10,8 @@ newrelic = "*"
 pymongo = "*"
 dnspython = "*"
 personapi= {editable = true, path = "."}
+bradocs4py = "*"
+email-validator = "*"
 
 [dev-packages]
 pytest = "*"

@@ -1,17 +1,42 @@
 #!/usr/bin/env python
 
 import os
-from pymongo import MongoClient
-from pydantic import BaseModel, BaseSettings
+from datetime import date, datetime
+
+from bradocs4py import CPF
 from fastapi import Depends
+from pydantic import BaseModel, BaseSettings, EmailStr, validator
+from pymongo import MongoClient
 
 
 class User(BaseModel):
     firstName: str
     lastName: str
     cpf: str
-    email: str
-    birthDate: str
+    email: EmailStr
+    birthDate: date
+
+    @validator("cpf")
+    def cpf_validator(cls, cpf_str):
+        cpf = CPF(cpf_str)
+        # not declaring the field itself as CPF type to avoid fuzz with pymongo
+        if cpf.isValid:
+            return str(cpf)
+        else:
+            raise ValueError("%s is not a valid CPF number." % cpf_str)
+
+    @validator("birthDate")
+    def birth_date_validator(cls, d):
+        if d > date.today():
+            raise ValueError("Birth date is on the future. Not allowed.")
+        # convert to datetime to avoid problems with pymongo
+        return datetime(d.year, d.month, d.day)
+
+    class Config:
+        json_encoders = {
+            # represent as date only to json
+            datetime: lambda v: v.strftime("%Y-%m-%d"),
+        }
 
 
 class Settings(BaseSettings):

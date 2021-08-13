@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "104c7a36c621f9e88df55a6ae5cb00473066bfb2601c87355f497ec65ce484d8"
+            "sha256": "3edf1e5e267cb5dc16ab21d042753a69a27c37cf0d40abf8e1b1bd9ae2d5762f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -24,6 +24,14 @@
             "markers": "python_version >= '3.6'",
             "version": "==3.4.1"
         },
+        "bradocs4py": {
+            "hashes": [
+                "sha256:6991508a3a9448a626318eb5d59a409cff4177815b6bad3f3244fb1810149029",
+                "sha256:97cf170e40d322c21d605052f6d55e0814f5a6e44dc9399bff76228835f1e4f4"
+            ],
+            "index": "pypi",
+            "version": "==1.3.1.0"
+        },
         "click": {
             "hashes": [
                 "sha256:8c04c11192119b1ef78ea049e0a6f0463e4c48ef00a30160c704337586f3ad7a",
@@ -40,6 +48,14 @@
             "index": "pypi",
             "version": "==2.1.0"
         },
+        "email-validator": {
+            "hashes": [
+                "sha256:5675c8ceb7106a37e40e2698a57c056756bf3f272cfa8682a4f87ebd95d8440b",
+                "sha256:aa237a65f6f4da067119b7df3f13e89c25c051327b2b5b66dc075f33d62480d7"
+            ],
+            "index": "pypi",
+            "version": "==1.1.3"
+        },
         "fastapi": {
             "hashes": [
                 "sha256:c9256a89b0436223b45f53fe3a39b178f3da6be5841a2c59deedff4b676d003f",
@@ -55,6 +71,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==0.12.0"
+        },
+        "idna": {
+            "hashes": [
+                "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a",
+                "sha256:467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"
+            ],
+            "markers": "python_version >= '3.5'",
+            "version": "==3.2"
         },
         "newrelic": {
             "hashes": [
@@ -211,10 +235,6 @@
             "index": "pypi",
             "version": "==3.12.0"
         },
-        "sanitized-package": {
-            "editable": true,
-            "path": "."
-        },
         "starlette": {
             "hashes": [
                 "sha256:3c8e48e52736b3161e34c9f0e8153b4f32ec5d8995a3ee1d59410d92f75162ed",
@@ -247,6 +267,14 @@
                 "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"
             ],
             "version": "==1.4.4"
+        },
+        "appnope": {
+            "hashes": [
+                "sha256:93aa393e9d6c54c5cd570ccadd8edad61ea0c4b9ea7a01409020c9aa019eb442",
+                "sha256:dd83cd4b5b460958838f6eb3000c660b1f9caf2a5b1de4264e941512f603258a"
+            ],
+            "markers": "sys_platform == 'darwin' and platform_system == 'Darwin'",
+            "version": "==0.1.2"
         },
         "attrs": {
             "hashes": [
@@ -566,7 +594,7 @@
                 "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a",
                 "sha256:467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"
             ],
-            "markers": "python_version >= '3'",
+            "markers": "python_version >= '3.5'",
             "version": "==3.2"
         },
         "iniconfig": {

@@ -15,44 +15,44 @@ users = [
     {
         "firstName": "Mickey",
         "lastName": "Mouse",
-        "cpf": "000.000.0001-11",
+        "cpf": "609.350.354-27",
         "email": "mickey.mouse@disney.com",
-        "birthDate": "04/04/1960",
+        "birthDate": "1928-11-18",
     },
     {
         "firstName": "Minnie",
         "lastName": "Mouse",
-        "cpf": "000.000.0002-22",
+        "cpf": "673.810.785-46",
         "email": "minnie.mouse@disney.com",
-        "birthDate": "03/03/1966",
+        "birthDate": "1928-11-18",
     },
 ]
 
 duplicate_user = {
     "firstName": "Mickey",
     "lastName": "Mouse Python Test",
-    "cpf": "000.000.0001-11",
+    "cpf": "609.350.354-27",
     "email": "mickey.mouse2@disney.com",
-    "birthDate": "04/04/1965",
+    "birthDate": "2021-07-10",
 }
 
 new_user = {
     "firstName": "Donald",
     "lastName": "Duck",
-    "cpf": "000.000.0003-33",
+    "cpf": "324.453.314-04",
     "email": "donald.duck@disney.com",
-    "birthDate": "07/09/1970",
+    "birthDate": "1934-06-09",
 }
 
 
 # should be different from nonexistent user cpf
-mismatched_nonexistent_user_cpf = "999.999.9999-99"
+mismatched_nonexistent_user_cpf = "446.153.595-94"
 nonexistent_user = {
     "firstName": "Nonexistent",
     "lastName": "User",
-    "cpf": "000.000.0000-00",
+    "cpf": "857.545.040-98",
     "email": "nonexistent@test.com",
-    "birthDate": "04/04/1980",
+    "birthDate": "1980-04-04",
 }
 
 
