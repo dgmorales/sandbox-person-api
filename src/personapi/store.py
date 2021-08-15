@@ -3,6 +3,7 @@
 import os
 from datetime import date, datetime
 
+from time import sleep
 from bradocs4py import CPF
 from fastapi import Depends
 from pydantic import BaseModel, BaseSettings, EmailStr, validator
@@ -41,6 +42,7 @@ class User(BaseModel):
 
 class Settings(BaseSettings):
     db_conn_str: str = "mongodb://localhost:27017/"
+    simulated_delay_seconds: int = 0
 
 
 def get_settings():  # pragma: no cover - this is overridden in tests
@@ -50,7 +52,7 @@ def get_settings():  # pragma: no cover - this is overridden in tests
 
 
 def get_db(settings: Settings = Depends(get_settings)):
-    return UserStore(settings.db_conn_str)
+    return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
 
 
 def user_from_db(user_db_item):
@@ -89,10 +91,11 @@ class SingletonMeta(type):
 
 
 class UserStore(metaclass=SingletonMeta):
-    def __init__(self, conn_string):
+    def __init__(self, conn_string, simulated_delay_seconds=0):
         print("[PID %d] Connecting to %s" % (os.getpid(), conn_string))
         self.client = MongoClient(conn_string)
         self.db = self.client["people"]
+        self.simulated_delay_seconds = simulated_delay_seconds
         print("[PID %d] New MongoDB connection opened." % os.getpid())
 
     def insert_user(self, user):
@@ -105,6 +108,8 @@ class UserStore(metaclass=SingletonMeta):
         self.db.users.delete_one({"cpf": cpf})
 
     def get_user(self, cpf):
+        if self.simulated_delay_seconds > 0:
+            sleep(self.simulated_delay_seconds)
         return self.db.users.find_one({"cpf": cpf})
 
     def get_all_users(self):

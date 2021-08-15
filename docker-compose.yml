@@ -6,6 +6,7 @@ services:
       - "8000:8000"
     environment:
       DB_CONN_STR: mongodb://persondb:27017/
+      SIMULATED_DELAY_SECONDS:
   persondb:
     image: mongo
     ports:
