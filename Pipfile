@@ -23,6 +23,7 @@ ipykernel = "*"
 flake8 = "*"
 bandit = "*"
 black = "*"
+locust = "*"
 
 [requires]
 python_version = "3.9"
