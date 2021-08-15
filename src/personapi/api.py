@@ -2,31 +2,46 @@
 
 import uvicorn
 
+from typing import List
 from fastapi import FastAPI, HTTPException, Depends, status
 
 from .store import UserStore, User, get_db, user_from_db
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Person API", description="A toy project, a CRUD for people records."
+)
 
 
-@app.get("/users")
+@app.get("/users", response_model=List[User])
 def get_users(db: UserStore = Depends(get_db)):
     return [user_from_db(item) for item in db.get_all_users()]
 
 
-@app.post("/users", status_code=status.HTTP_201_CREATED)
+error_message_for_duplicate_user = "Duplicate user. The CPF is already registered."
+
+
+@app.post(
+    "/users",
+    status_code=status.HTTP_201_CREATED,
+    response_model=User,
+    responses={
+        status.HTTP_409_CONFLICT: {
+            "description": "Processing Error: " + error_message_for_duplicate_user
+        }
+    },
+)
 def post_user(user: User, db: UserStore = Depends(get_db)):
     if db.get_user(user.cpf):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Duplicate user. The CPF is already registered.",
+            detail=error_message_for_duplicate_user,
         )
     db.insert_user(user)
     return user
 
 
-@app.put("/users/{cpf}")
+@app.put("/users/{cpf}", response_model=User)
 def put_user(cpf: str, user: User, db: UserStore = Depends(get_db)):
     if cpf != user.cpf:
         raise HTTPException(
@@ -42,7 +57,7 @@ def put_user(cpf: str, user: User, db: UserStore = Depends(get_db)):
     return user
 
 
-@app.get("/users/{cpf}")
+@app.get("/users/{cpf}", response_model=User)
 def get_user(cpf: str, db: UserStore = Depends(get_db)):
     u = db.get_user(cpf)
     if not u:
@@ -52,7 +67,7 @@ def get_user(cpf: str, db: UserStore = Depends(get_db)):
     return user_from_db(u)
 
 
-@app.delete("/users/{cpf}")
+@app.delete("/users/{cpf}", response_model=User)
 def delete_user(cpf: str, db: UserStore = Depends(get_db)):
     u = db.get_user(cpf)
     if not u:
