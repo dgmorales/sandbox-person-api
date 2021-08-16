@@ -10,5 +10,5 @@ class ApiUser(HttpUser):
 
     @task
     def get_user(self):
-        cpf = "857.545.040-98"
+        cpf = "218.254.539-50"
         self.client.get("/users/" + cpf)
