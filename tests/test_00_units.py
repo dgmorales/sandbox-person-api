@@ -1,11 +1,11 @@
 import random
-
 from datetime import date, timedelta
-from personapi.store import SingletonMeta, User
-from pytest import raises
-from pydantic import ValidationError
 
-from .testdata import users, new_user, duplicate_user, nonexistent_user
+from personapi.store import SingletonMeta, User
+from pydantic import ValidationError
+from pytest import raises
+
+from .testdata import duplicate_user, new_user, nonexistent_user, users
 
 
 def test_singleton():

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import os
-from datetime import date, datetime
-
 from asyncio import sleep
+from datetime import date, datetime
 from typing import Dict, List, Union
+
 from bradocs4py import CPF
 from fastapi import Depends
-from pydantic import BaseModel, BaseSettings, EmailStr, validator
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, BaseSettings, EmailStr, validator
 
 # hard coded limit for th sake of laziness and not implementing pagination
 MAX_USERS = 100

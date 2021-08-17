@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import uvicorn
+from typing import Any, Dict, List, Optional, Union
 
-from typing import List, Dict, Union, Optional, Any
-from fastapi import FastAPI, HTTPException, Depends, status
+import uvicorn
+from fastapi import Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel
 
-from .store import UserStore, User, get_user_store
-
+from .store import User, UserStore, get_user_store
 
 app = FastAPI(
     title="Person API", description="A toy project, a CRUD for people records."

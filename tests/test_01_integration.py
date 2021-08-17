@@ -1,19 +1,19 @@
 import copy
+from time import sleep
 
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from pymongo import MongoClient
-from time import sleep
-
 from personapi.api import app
 from personapi.store import Settings, get_settings
+from pymongo import MongoClient
+
 from .testdata import (
-    users,
-    new_user,
     duplicate_user,
-    nonexistent_user,
     mismatched_nonexistent_user_cpf,
+    new_user,
+    nonexistent_user,
+    users,
 )
 
 pytest_plugins = ["docker_compose"]
