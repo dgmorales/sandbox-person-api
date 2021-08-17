@@ -4,6 +4,7 @@ import os
 from datetime import date, datetime
 
 from asyncio import sleep
+from typing import Dict, List, Union
 from bradocs4py import CPF
 from fastapi import Depends
 from pydantic import BaseModel, BaseSettings, EmailStr, validator
@@ -41,6 +42,15 @@ class User(BaseModel):
             # represent as date only to json
             datetime: lambda v: v.strftime("%Y-%m-%d"),
         }
+        schema_extra = {
+            "example": {
+                "firstName": "Mickey",
+                "lastName": "Mouse",
+                "cpf": "609.350.354-27",
+                "email": "mickey.mouse@disney.com",
+                "birthDate": "1928-11-18",
+            }
+        }
 
 
 class Settings(BaseSettings):
@@ -58,20 +68,6 @@ async def get_db(settings: Settings = Depends(get_settings)):
     return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
 
 
-def user_from_db(user_db_item):
-    """Transform a mongo document on a User class object.
-
-    A hack while I do not understand enough of fastapi and pydantic to do it better."
-    """
-    return User(
-        firstName=user_db_item["firstName"],
-        lastName=user_db_item["lastName"],
-        cpf=user_db_item["cpf"],
-        email=user_db_item["email"],
-        birthDate=user_db_item["birthDate"],
-    )
-
-
 # thread unsafe singleton from https://refactoring.guru/design-patterns/singleton/python
 class SingletonMeta(type):
     """
@@ -80,7 +76,7 @@ class SingletonMeta(type):
     metaclass because it is best suited for this purpose.
     """
 
-    _instances = {}
+    _instances: Dict[type, type] = {}
 
     def __call__(cls, *args, **kwargs):
         """
@@ -94,29 +90,39 @@ class SingletonMeta(type):
 
 
 class UserStore(metaclass=SingletonMeta):
-    def __init__(self, conn_string, simulated_delay_seconds=0):
+    def __init__(self, conn_string: str, simulated_delay_seconds=0):
         print("[PID %d] Connecting to %s" % (os.getpid(), conn_string))
         self.client = AsyncIOMotorClient(conn_string)
         self.db = self.client["people"]
         self.simulated_delay_seconds = simulated_delay_seconds
         print("[PID %d] New MongoDB connection opened." % os.getpid())
 
-    async def insert_user(self, user):
+    async def insert_user(self, user: User) -> None:
+        "Inserts user into the database."
         await self.db.users.insert_one(dict(user))
 
-    async def update_user(self, cpf, user):
-        await self.db.users.replace_one({"cpf": cpf}, dict(user))
+    async def update_user(self, cpf: str, user: User) -> None:
+        "Updates user with specified cpf."
+        await self.db.users.replace_one({"cpf": cpf}, user.dict())
 
-    async def delete_user(self, cpf):
+    async def delete_user(self, cpf: str) -> None:
+        "Deletes user with specified cpf."
         await self.db.users.delete_one({"cpf": cpf})
 
-    async def get_user(self, cpf):
+    async def get_user(self, cpf: str) -> Union[User, None]:
+        "Get user with specified cpf. Returns None if not found."
         if self.simulated_delay_seconds > 0:
-            await sleep(self.simulated_delay_seconds)
-        return await self.db.users.find_one({"cpf": cpf})
+            await sleep(self.simulated_delay_seconds)  # pragma: nocover
+        user = await self.db.users.find_one({"cpf": cpf})
+        if user:
+            return User(**user)
+        else:
+            return None
 
-    async def get_all_users(self):
+    async def get_all_users(self) -> List[User]:
+        "Get a list of all users."
         # this would not be wise on a huge db (loads all db in memory at once),
         # but will suffice here
+        # TODO: fix the hard-coded max here
         users = await self.db.users.find().to_list(MAX_USERS)
-        return users
+        return [User(**u) for u in users]

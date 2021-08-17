@@ -20,5 +20,6 @@
 	"python.linting.banditArgs": [
 		"-c bandit.yml"
 	],
-	"python.formatting.provider": "black"
+	"python.formatting.provider": "black",
+	"python.linting.mypyEnabled": true
 }

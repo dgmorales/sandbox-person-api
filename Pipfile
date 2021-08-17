@@ -25,6 +25,7 @@ flake8 = "*"
 bandit = "*"
 black = "*"
 locust = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.9"
