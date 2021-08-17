@@ -3,11 +3,14 @@
 import os
 from datetime import date, datetime
 
-from time import sleep
+from asyncio import sleep
 from bradocs4py import CPF
 from fastapi import Depends
 from pydantic import BaseModel, BaseSettings, EmailStr, validator
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
+
+# hard coded limit for th sake of laziness and not implementing pagination
+MAX_USERS = 100
 
 
 class User(BaseModel):
@@ -51,7 +54,7 @@ def get_settings():  # pragma: no cover - this is overridden in tests
     return Settings()
 
 
-def get_db(settings: Settings = Depends(get_settings)):
+async def get_db(settings: Settings = Depends(get_settings)):
     return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
 
 
@@ -93,26 +96,27 @@ class SingletonMeta(type):
 class UserStore(metaclass=SingletonMeta):
     def __init__(self, conn_string, simulated_delay_seconds=0):
         print("[PID %d] Connecting to %s" % (os.getpid(), conn_string))
-        self.client = MongoClient(conn_string)
+        self.client = AsyncIOMotorClient(conn_string)
         self.db = self.client["people"]
         self.simulated_delay_seconds = simulated_delay_seconds
         print("[PID %d] New MongoDB connection opened." % os.getpid())
 
-    def insert_user(self, user):
-        self.db.users.insert_one(dict(user))
+    async def insert_user(self, user):
+        await self.db.users.insert_one(dict(user))
 
-    def update_user(self, cpf, user):
-        self.db.users.replace_one({"cpf": cpf}, dict(user))
+    async def update_user(self, cpf, user):
+        await self.db.users.replace_one({"cpf": cpf}, dict(user))
 
-    def delete_user(self, cpf):
-        self.db.users.delete_one({"cpf": cpf})
+    async def delete_user(self, cpf):
+        await self.db.users.delete_one({"cpf": cpf})
 
-    def get_user(self, cpf):
+    async def get_user(self, cpf):
         if self.simulated_delay_seconds > 0:
-            sleep(self.simulated_delay_seconds)
-        return self.db.users.find_one({"cpf": cpf})
+            await sleep(self.simulated_delay_seconds)
+        return await self.db.users.find_one({"cpf": cpf})
 
-    def get_all_users(self):
+    async def get_all_users(self):
         # this would not be wise on a huge db (loads all db in memory at once),
         # but will suffice here
-        return list(self.db.users.find())
+        users = await self.db.users.find().to_list(MAX_USERS)
+        return users

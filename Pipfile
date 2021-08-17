@@ -12,6 +12,7 @@ dnspython = "*"
 personapi= {editable = true, path = "."}
 bradocs4py = "*"
 email-validator = "*"
+motor = "*"
 
 [dev-packages]
 pytest = "*"

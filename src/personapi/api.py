@@ -14,8 +14,8 @@ app = FastAPI(
 
 
 @app.get("/users", response_model=List[User])
-def get_users(db: UserStore = Depends(get_db)):
-    return [user_from_db(item) for item in db.get_all_users()]
+async def get_users(db: UserStore = Depends(get_db)):
+    return [user_from_db(item) for item in await db.get_all_users()]
 
 
 error_message_for_duplicate_user = "Duplicate user. The CPF is already registered."
@@ -31,35 +31,35 @@ error_message_for_duplicate_user = "Duplicate user. The CPF is already registere
         }
     },
 )
-def post_user(user: User, db: UserStore = Depends(get_db)):
-    if db.get_user(user.cpf):
+async def post_user(user: User, db: UserStore = Depends(get_db)):
+    if await db.get_user(user.cpf):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=error_message_for_duplicate_user,
         )
-    db.insert_user(user)
+    await db.insert_user(user)
     return user
 
 
 @app.put("/users/{cpf}", response_model=User)
-def put_user(cpf: str, user: User, db: UserStore = Depends(get_db)):
+async def put_user(cpf: str, user: User, db: UserStore = Depends(get_db)):
     if cpf != user.cpf:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="CPF in the path does not match CPF in body.",
         )
 
-    if not db.get_user(cpf):
+    if not await db.get_user(cpf):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist."
         )
-    db.update_user(cpf, user)
+    await db.update_user(cpf, user)
     return user
 
 
 @app.get("/users/{cpf}", response_model=User)
-def get_user(cpf: str, db: UserStore = Depends(get_db)):
-    u = db.get_user(cpf)
+async def get_user(cpf: str, db: UserStore = Depends(get_db)):
+    u = await db.get_user(cpf)
     if not u:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist."
@@ -68,14 +68,14 @@ def get_user(cpf: str, db: UserStore = Depends(get_db)):
 
 
 @app.delete("/users/{cpf}", response_model=User)
-def delete_user(cpf: str, db: UserStore = Depends(get_db)):
-    u = db.get_user(cpf)
+async def delete_user(cpf: str, db: UserStore = Depends(get_db)):
+    u = await db.get_user(cpf)
     if not u:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist."
         )
     else:
-        db.delete_user(cpf)
+        await db.delete_user(cpf)
     return user_from_db(u)
 
 
