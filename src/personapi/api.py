@@ -6,7 +6,7 @@ from typing import List, Dict, Union, Optional, Any
 from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel
 
-from .store import UserStore, User, get_db
+from .store import UserStore, User, get_user_store
 
 
 app = FastAPI(
@@ -35,8 +35,8 @@ response_ok_or_notfound: Optional[Dict[Union[int, str], Dict[str, Any]]] = {
 }
 
 
-async def get_existing_user(db: UserStore, cpf: str) -> User:
-    user = await db.get_user(cpf)
+async def get_existing_user(user_store: UserStore, cpf: str) -> User:
+    user = await user_store.get(cpf)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -46,8 +46,8 @@ async def get_existing_user(db: UserStore, cpf: str) -> User:
 
 
 @app.get("/users", response_model=List[User])
-async def get_users(db: UserStore = Depends(get_db)):
-    return await db.get_all_users()
+async def users_get_all(user_store: UserStore = Depends(get_user_store)):
+    return await user_store.get_all()
 
 
 @app.post(
@@ -61,13 +61,13 @@ async def get_users(db: UserStore = Depends(get_db)):
         },
     },
 )
-async def post_user(user: User, db: UserStore = Depends(get_db)):
-    if await db.get_user(user.cpf):
+async def users_post(user: User, user_store: UserStore = Depends(get_user_store)):
+    if await user_store.get(user.cpf):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=error_message_for_duplicate_user,
         )
-    await db.insert_user(user)
+    await user_store.add(user)
     return user
 
 
@@ -81,7 +81,9 @@ async def post_user(user: User, db: UserStore = Depends(get_db)):
         },
     },
 )
-async def put_user(cpf: str, user: User, db: UserStore = Depends(get_db)):
+async def users_put(
+    cpf: str, user: User, user_store: UserStore = Depends(get_user_store)
+):
     if cpf != user.cpf:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -89,21 +91,21 @@ async def put_user(cpf: str, user: User, db: UserStore = Depends(get_db)):
         )
 
     # will throw exception if user does not exist
-    await get_existing_user(db, cpf)
-    await db.update_user(cpf, user)
+    await get_existing_user(user_store, cpf)
+    await user_store.update(cpf, user)
     return user
 
 
 @app.get("/users/{cpf}", responses=response_ok_or_notfound)
-async def get_user(cpf: str, db: UserStore = Depends(get_db)):
-    return await get_existing_user(db, cpf)
+async def users_get_one(cpf: str, user_store: UserStore = Depends(get_user_store)):
+    return await get_existing_user(user_store, cpf)
 
 
 @app.delete("/users/{cpf}", responses=response_ok_or_notfound)
-async def delete_user(cpf: str, db: UserStore = Depends(get_db)):
+async def users_delete(cpf: str, user_store: UserStore = Depends(get_user_store)):
     # will throw exception if user does not exist
-    user = await get_existing_user(db, cpf)
-    await db.delete_user(cpf)
+    user = await get_existing_user(user_store, cpf)
+    await user_store.remove(cpf)
     return user
 
 

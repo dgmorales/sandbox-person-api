@@ -64,7 +64,7 @@ def get_settings():  # pragma: no cover - this is overridden in tests
     return Settings()
 
 
-async def get_db(settings: Settings = Depends(get_settings)):
+async def get_user_store(settings: Settings = Depends(get_settings)):
     return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
 
 
@@ -97,19 +97,19 @@ class UserStore(metaclass=SingletonMeta):
         self.simulated_delay_seconds = simulated_delay_seconds
         print("[PID %d] New MongoDB connection opened." % os.getpid())
 
-    async def insert_user(self, user: User) -> None:
+    async def add(self, user: User) -> None:
         "Inserts user into the database."
         await self.db.users.insert_one(dict(user))
 
-    async def update_user(self, cpf: str, user: User) -> None:
+    async def update(self, cpf: str, user: User) -> None:
         "Updates user with specified cpf."
         await self.db.users.replace_one({"cpf": cpf}, user.dict())
 
-    async def delete_user(self, cpf: str) -> None:
+    async def remove(self, cpf: str) -> None:
         "Deletes user with specified cpf."
         await self.db.users.delete_one({"cpf": cpf})
 
-    async def get_user(self, cpf: str) -> Union[User, None]:
+    async def get(self, cpf: str) -> Union[User, None]:
         "Get user with specified cpf. Returns None if not found."
         if self.simulated_delay_seconds > 0:
             await sleep(self.simulated_delay_seconds)  # pragma: no cover
@@ -119,7 +119,7 @@ class UserStore(metaclass=SingletonMeta):
         else:
             return None
 
-    async def get_all_users(self) -> List[User]:
+    async def get_all(self) -> List[User]:
         "Get a list of all users."
         # this would not be wise on a huge db (loads all db in memory at once),
         # but will suffice here
