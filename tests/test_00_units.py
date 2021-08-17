@@ -5,13 +5,7 @@ from personapi.store import SingletonMeta, User
 from pytest import raises
 from pydantic import ValidationError
 
-valid_user = {
-    "firstName": "Donald",
-    "lastName": "Duck",
-    "cpf": "324.453.314-04",
-    "email": "donald.duck@disney.com",
-    "birthDate": "1934-06-09",
-}
+from .testdata import users, new_user, duplicate_user, nonexistent_user
 
 
 def test_singleton():
@@ -25,12 +19,25 @@ def test_singleton():
     assert a.myid == b.myid
 
 
-def test_valid_user():
-    User(**valid_user)
+def test_new_user():
+    User(**new_user)
+
+
+def test_duplicate_user():
+    User(**duplicate_user)
+
+
+def test_nonexistent_user():
+    User(**nonexistent_user)
+
+
+def test_users():
+    for user in users:
+        User(**user)
 
 
 def test_invalid_email():
-    invalid_user = valid_user.copy()
+    invalid_user = new_user.copy()
     invalid_emails = [
         "not-a-email",
         "someone@rootdomain",
@@ -44,7 +51,7 @@ def test_invalid_email():
 
 
 def test_invalid_birthdate_fmt():
-    invalid_user = valid_user.copy()
+    invalid_user = new_user.copy()
     invalid_dates = [
         "",
         "22/01/1979",
@@ -63,7 +70,7 @@ def test_invalid_birthdate_fmt():
 
 
 def test_birthdate_on_future():
-    invalid_user = valid_user.copy()
+    invalid_user = new_user.copy()
     tomorrow = date.today() + timedelta(days=1)
     invalid_user["birthDate"] = tomorrow.strftime("%Y-%m-%d")
     with raises(ValidationError):
@@ -71,7 +78,7 @@ def test_birthdate_on_future():
 
 
 def test_invalid_cpf():
-    invalid_user = valid_user.copy()
+    invalid_user = new_user.copy()
     invalid_cpfs = [
         "000.000.000-00",
         "000.000.001-11",
