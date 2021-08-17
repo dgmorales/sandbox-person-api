@@ -112,7 +112,7 @@ class UserStore(metaclass=SingletonMeta):
     async def get_user(self, cpf: str) -> Union[User, None]:
         "Get user with specified cpf. Returns None if not found."
         if self.simulated_delay_seconds > 0:
-            await sleep(self.simulated_delay_seconds)  # pragma: nocover
+            await sleep(self.simulated_delay_seconds)  # pragma: no cover
         user = await self.db.users.find_one({"cpf": cpf})
         if user:
             return User(**user)

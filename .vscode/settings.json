@@ -21,5 +21,6 @@
 		"-c bandit.yml"
 	],
 	"python.formatting.provider": "black",
-	"python.linting.mypyEnabled": true
+	"python.linting.mypyEnabled": true,
+	"python.linting.mypyCategorySeverity.error": "Hint"
 }
