@@ -49,6 +49,11 @@ async def users_get_all(user_store: UserStore = Depends(get_user_store)):
     return await user_store.get_all()
 
 
+@app.get("/users/{cpf}", responses=response_ok_or_notfound)
+async def users_get_one(cpf: str, user_store: UserStore = Depends(get_user_store)):
+    return await get_existing_user(user_store, cpf)
+
+
 @app.post(
     "/users",
     status_code=status.HTTP_201_CREATED,
@@ -93,11 +98,6 @@ async def users_put(
     await get_existing_user(user_store, cpf)
     await user_store.update(cpf, user)
     return user
-
-
-@app.get("/users/{cpf}", responses=response_ok_or_notfound)
-async def users_get_one(cpf: str, user_store: UserStore = Depends(get_user_store)):
-    return await get_existing_user(user_store, cpf)
 
 
 @app.delete("/users/{cpf}", responses=response_ok_or_notfound)
