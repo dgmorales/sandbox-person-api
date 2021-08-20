@@ -12,8 +12,9 @@ requirements.txt: Pipfile
 # This is done to optimize docker image building, see Dockerfile
 	pipenv lock --keep-outdated --requirements | grep -v '^\-e \.' > requirements.txt
 
-run-tests:
+tests:
 	pipenv run pytest tests/
+.PHONY: tests
 
 checks:
 	pipenv run flake8

@@ -30,7 +30,7 @@ jobs:
           make checks
       - name: Run tests
         run: |
-          make run-tests
+          make tests
       - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
