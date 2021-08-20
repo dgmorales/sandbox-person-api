@@ -2,6 +2,7 @@ import copy
 from time import sleep
 
 import pytest
+import subprocess
 from fastapi import status
 from fastapi.testclient import TestClient
 from personapi.api import app
@@ -17,6 +18,15 @@ from .testdata import (
 )
 
 pytest_plugins = ["docker_compose"]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def check_docker_is_running():
+    exit_code = subprocess.call(["docker", "info"])
+    if exit_code != 0:
+        pytest.exit(
+            5, "Docker is not running. It is required to the integration tests. Exiting"
+        )
 
 
 @pytest.fixture(scope="module")
