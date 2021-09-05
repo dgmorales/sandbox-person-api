@@ -3,12 +3,14 @@
 import os
 from asyncio import sleep
 from datetime import date, datetime
-from typing import Dict, List, Union
+from typing import List, Optional, Union
 
 from bradocs4py import CPF
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, BaseSettings, EmailStr, validator
+from pydantic import BaseModel, EmailStr, validator
+
+from .utils import Settings, SingletonMeta, get_settings
 
 # hard coded limit for th sake of laziness and not implementing pagination
 MAX_USERS = 100
@@ -53,40 +55,10 @@ class User(BaseModel):
         }
 
 
-class Settings(BaseSettings):
-    db_conn_str: str = "mongodb://localhost:27017/"
-    simulated_delay_seconds: int = 0
-
-
-def get_settings():  # pragma: no cover - this is overridden in tests
-    # using Depends(Settings) for some reason breaks reading the setting from
-    # envvar, so we have this function
-    return Settings()
 
 
 async def get_user_store(settings: Settings = Depends(get_settings)):
     return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
-
-
-# thread unsafe singleton from https://refactoring.guru/design-patterns/singleton/python
-class SingletonMeta(type):
-    """
-    The Singleton class can be implemented in different ways in Python. Some
-    possible methods include: base class, decorator, metaclass. We will use the
-    metaclass because it is best suited for this purpose.
-    """
-
-    _instances: Dict[type, type] = {}
-
-    def __call__(cls, *args, **kwargs):
-        """
-        Possible changes to the value of the `__init__` argument do not affect
-        the returned instance.
-        """
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
 
 
 class UserStore(metaclass=SingletonMeta):
