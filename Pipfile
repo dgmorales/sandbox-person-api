@@ -13,6 +13,9 @@ personapi= {editable = true, path = "."}
 bradocs4py = "*"
 email-validator = "*"
 motor = "*"
+python-multipart = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "*"}
 
 [dev-packages]
 pytest = "*"
