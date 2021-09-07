@@ -36,7 +36,7 @@ response_ok_or_notfound: Optional[Dict[Union[int, str], Dict[str, Any]]] = {
     },
 }
 
-token_url = "token"
+token_url = "token"  # nosec: bandit false positive [B105:hardcoded_password_string]
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
 
 
