@@ -2,25 +2,20 @@
 """
 Supporting functions and classes shared by other modules in the Person API package.
 """
-from pydantic import BaseSettings
 from typing import Dict
+
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
     db_conn_str: str = "mongodb://localhost:27017/"
     simulated_delay_seconds: int = 0
-    # auth_token_algorithm: str = "HS256"
-    # auth_token_expiration_in_minutes: int = 15
-    # auth_token_base_secret: str
+    auth_token_algorithm: str = "HS256"
+    auth_token_expiration_in_minutes: int = 15
+    auth_token_base_secret: str
 
-    # class Config:
-    #     env_prefix = "personapi_"
-
-
-def get_settings():  # pragma: no cover - this is overridden in tests
-    # using Depends(Settings) for some reason breaks reading the setting from
-    # envvar, so we have this function
-    return Settings()
+    class Config:
+        env_prefix = "personapi_"
 
 
 # thread unsafe singleton from https://refactoring.guru/design-patterns/singleton/python

@@ -5,8 +5,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DB_CONN_STR: mongodb://persondb:27017/
-      SIMULATED_DELAY_SECONDS:
+      PERSONAPI_DB_CONN_STR: mongodb://persondb:27017/
+      PERSONAPI_SIMULATED_DELAY_SECONDS:
+      PERSONAPI_AUTH_TOKEN_BASE_SECRET:
+      PERSONAPI_AUTH_TOKEN_EXPIRATION_IN_MINUTES:
+      PERSONAPI_AUTH_TOKEN_ALGORITHM:
   persondb:
     image: mongo
     ports:

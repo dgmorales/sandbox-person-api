@@ -5,8 +5,8 @@ import pytest
 import subprocess
 from fastapi import status
 from fastapi.testclient import TestClient
-from personapi.api import app
-from personapi.store import Settings, get_settings
+from personapi.api import app, get_settings
+from personapi.utils import Settings
 from pymongo import MongoClient
 
 from .testdata import (
