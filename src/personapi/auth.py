@@ -97,7 +97,8 @@ class AuthProvider(metaclass=SingletonMeta):
         encoded_jwt = jwt.encode(
             to_encode, self.token_base_secret, algorithm=self.token_algorithm
         )
-        return Token(access_token=encoded_jwt, token_type="bearer")
+        # Bandit false positive: [B106:hardcoded_password_funcarg] (token_type="bearer")
+        return Token(access_token=encoded_jwt, token_type="bearer")  # nosec
 
     def _verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
