@@ -6,8 +6,9 @@ import subprocess
 import secrets
 from fastapi import status
 from fastapi.testclient import TestClient
-from personapi.api import app, get_settings
+from personapi.api import app, get_settings, token_url
 from personapi.utils import Settings
+from personapi.auth import PasswordHasher
 from pymongo import MongoClient
 
 from .testdata import (
@@ -19,6 +20,8 @@ from .testdata import (
 )
 
 pytest_plugins = ["docker_compose"]
+test_auth_user_index = 0
+test_auth_user_password = "SuperPa$sword123"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -31,24 +34,55 @@ def check_docker_is_running():
 
 
 @pytest.fixture(scope="module")
-def testdb(module_scoped_container_getter):
+def testdb_conn_str(module_scoped_container_getter):
     """Returns the connection string to a db running on docker compose.
 
     - Spins up a test db with docker compose
-    - Wait for it to be up
-    - Prime it with initial data
     - Returns the conn string to it
     """
     service = module_scoped_container_getter.get("person-db-test").network_info[0]
-    db_conn_str = "mongodb://%s:%s/" % (service.hostname, service.host_port)
+    return "mongodb://%s:%s/" % (service.hostname, service.host_port)
+
+
+@pytest.fixture(scope="module")
+def testsettings(testdb_conn_str):
+    "Returns app Settings suitable for testing"
+    return Settings(
+        db_conn_str=testdb_conn_str, auth_token_base_secret=secrets.token_hex()
+    )
+
+
+@pytest.fixture(scope="module")
+def testdb_prime_data(testsettings):
+    "Returns suitable data for priming the database"
+    password_hasher = PasswordHasher()
+    users_with_auth_info = copy.deepcopy(users)
+    users_with_auth_info[test_auth_user_index].update(
+        {
+            "isAdmin": True,
+            "hashedPassword": password_hasher.get_hash(test_auth_user_password),
+        }
+    )
+    return users_with_auth_info
+
+
+@pytest.fixture(scope="module")
+def testdb_primed(testdb_conn_str, testdb_prime_data):
+    """Primes the database with data.
+
+    - Wait for the db to be up
+    - Prime it with initial data
+    - Returns the conn string to it
+    """
     for i in range(15):
         try:
-            client = MongoClient(db_conn_str)
+            client = MongoClient(testdb_conn_str)
             print("Mongo is up")
             # prime db
             # must deepcopy because insert_many changes the dict objects inserting _id
-            client["people"].users.insert_many(copy.deepcopy(users))
-            return db_conn_str
+            print(testdb_prime_data)
+            client["people"].users.insert_many(testdb_prime_data)
+            return testdb_conn_str
         except Exception as e:
             print(e)
             print("Database is not available. Sleep for 1 sec")
@@ -57,17 +91,30 @@ def testdb(module_scoped_container_getter):
 
 
 @pytest.fixture(scope="module")
-def testclient(testdb):
+def testclient(testdb_primed, testsettings):
     def get_test_settings():
-        # testdb returns a conn string
-        return Settings(db_conn_str=testdb, auth_token_base_secret=secrets.token_hex())
+        return testsettings
 
     app.dependency_overrides[get_settings] = get_test_settings
     return TestClient(app)
 
 
+@pytest.fixture(scope="module")
+def testtoken(testclient):
+    auth_data = {
+        "grant_type": "password",
+        "username": users[test_auth_user_index]["cpf"],
+        "password": test_auth_user_password,
+    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    response = testclient.post("/%s" % token_url, headers=headers, data=auth_data)
+    if response.status_code == status.HTTP_200_OK:
+        print(response)
+        print(dir(response))
+        return response.json()
+
+
 def test_get_users(testclient):
-    print(users)
     response = testclient.get("/users/")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) == len(users)
