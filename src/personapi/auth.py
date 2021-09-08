@@ -50,8 +50,7 @@ class AuthProvider(metaclass=SingletonMeta):
         self.token_algorithm = token_algorithm
         self.auth_token_expiration_in_minutes = token_expiration_in_minutes
         self.user_store = user_store
-
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.password_hasher = PasswordHasher()
 
     async def auth_user(self, username: str, password: str) -> Token:
         user = await self.user_store.get(username)
@@ -62,7 +61,7 @@ class AuthProvider(metaclass=SingletonMeta):
                 "User '%s' is not an admin. User must be an Admin to be allowed access."
                 % username
             )
-        elif not self._verify_password(password, user.hashedPassword):
+        elif not self.password_hasher.verify(password, user.hashedPassword):
             raise WrongPassword
         else:
             return self._create_access_token(data={"sub": user.cpf})
@@ -100,8 +99,15 @@ class AuthProvider(metaclass=SingletonMeta):
         # Bandit false positive: [B106:hardcoded_password_funcarg] (token_type="bearer")
         return Token(access_token=encoded_jwt, token_type="bearer")  # nosec
 
-    def _verify_password(self, plain_password, hashed_password):
+
+class PasswordHasher:
+    "Manages password hashes using passlib"
+
+    def __init__(self):
+        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    def verify(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def _get_password_hash(self, password):
+    def get_hash(self, password):
         return self.pwd_context.hash(password)
