@@ -3,6 +3,7 @@ from time import sleep
 
 import pytest
 import subprocess
+import secrets
 from fastapi import status
 from fastapi.testclient import TestClient
 from personapi.api import app, get_settings
@@ -58,8 +59,8 @@ def testdb(module_scoped_container_getter):
 @pytest.fixture(scope="module")
 def testclient(testdb):
     def get_test_settings():
-        "Function to override settings using the conn string returned by testdb fixture"
-        return Settings(db_conn_str=testdb)
+        # testdb returns a conn string
+        return Settings(db_conn_str=testdb, auth_token_base_secret=secrets.token_hex())
 
     app.dependency_overrides[get_settings] = get_test_settings
     return TestClient(app)
