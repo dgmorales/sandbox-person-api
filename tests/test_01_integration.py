@@ -8,7 +8,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from personapi.api import app, get_settings, token_url
 from personapi.utils import Settings
-from personapi.auth import PasswordHasher
+from personapi.auth import PasswordHasher, Token
 from pymongo import MongoClient
 
 from .testdata import (
@@ -100,7 +100,7 @@ def testclient(testdb_primed, testsettings):
 
 
 @pytest.fixture(scope="module")
-def testtoken(testclient):
+def testtoken_header(testclient):
     auth_data = {
         "grant_type": "password",
         "username": users[test_auth_user_index]["cpf"],
@@ -109,9 +109,18 @@ def testtoken(testclient):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     response = testclient.post("/%s" % token_url, headers=headers, data=auth_data)
     if response.status_code == status.HTTP_200_OK:
-        print(response)
-        print(dir(response))
-        return response.json()
+        token_dict = response.json()
+        token = Token(**token_dict)
+        return {"Authorization": "Bearer " + token.access_token}
+    else:
+        return {}
+
+
+def test_get_user_me(testclient, testtoken_header):
+    user = users[0]
+    response = testclient.get("/users/me", headers=testtoken_header)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == user
 
 
 def test_get_users(testclient):
