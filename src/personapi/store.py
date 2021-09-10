@@ -6,11 +6,10 @@ from datetime import date, datetime
 from typing import List, Optional, Union
 
 from bradocs4py import CPF
-from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, validator
 
-from .utils import Settings, SingletonMeta, get_settings
+from .utils import SingletonMeta
 
 # hard coded limit for th sake of laziness and not implementing pagination
 MAX_USERS = 100
@@ -55,10 +54,9 @@ class User(BaseModel):
         }
 
 
-
-
-async def get_user_store(settings: Settings = Depends(get_settings)):
-    return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
+class UserInDB(User):
+    isAdmin: Optional[bool] = False
+    hashedPassword: Optional[str] = None
 
 
 class UserStore(metaclass=SingletonMeta):
@@ -81,20 +79,20 @@ class UserStore(metaclass=SingletonMeta):
         "Deletes user with specified cpf."
         await self.db.users.delete_one({"cpf": cpf})
 
-    async def get(self, cpf: str) -> Union[User, None]:
+    async def get(self, cpf: str) -> Union[UserInDB, None]:
         "Get user with specified cpf. Returns None if not found."
         if self.simulated_delay_seconds > 0:
             await sleep(self.simulated_delay_seconds)  # pragma: no cover
         user = await self.db.users.find_one({"cpf": cpf})
         if user:
-            return User(**user)
+            return UserInDB(**user)
         else:
             return None
 
-    async def get_all(self) -> List[User]:
+    async def get_all(self) -> List[UserInDB]:
         "Get a list of all users."
         # this would not be wise on a huge db (loads all db in memory at once),
         # but will suffice here
         # TODO: fix the hard-coded max here
         users = await self.db.users.find().to_list(MAX_USERS)
-        return [User(**u) for u in users]
+        return [UserInDB(**u) for u in users]

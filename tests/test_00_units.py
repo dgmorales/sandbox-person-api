@@ -1,7 +1,8 @@
 import random
 from datetime import date, timedelta
 
-from personapi.store import SingletonMeta, User
+from personapi.store import User
+from personapi.utils import SingletonMeta
 from pydantic import ValidationError
 from pytest import raises
 

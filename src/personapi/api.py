@@ -4,9 +4,12 @@ from typing import Any, Dict, List, Optional, Union
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
-from .store import User, UserStore, get_user_store
+from .auth import AuthError, AuthProvider, Token
+from .store import User, UserInDB, UserStore
+from .utils import Settings
 
 app = FastAPI(
     title="Person API", description="A toy project, a CRUD for people records."
@@ -33,6 +36,46 @@ response_ok_or_notfound: Optional[Dict[Union[int, str], Dict[str, Any]]] = {
     },
 }
 
+token_url = "token"  # nosec: bandit false positive [B105:hardcoded_password_string]
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
+
+
+def get_settings():  # pragma: no cover - this is overridden in tests
+    # using Depends(Settings) for some reason breaks reading the setting from
+    # envvar, so we have this function
+    return Settings()
+
+
+async def get_user_store(settings: Settings = Depends(get_settings)):
+    return UserStore(settings.db_conn_str, settings.simulated_delay_seconds)
+
+
+def get_auth_provider(
+    settings: Settings = Depends(get_settings),
+    user_store: UserStore = Depends(get_user_store),
+):
+    return AuthProvider(
+        settings.auth_token_base_secret,
+        settings.auth_token_algorithm,
+        settings.auth_token_expiration_in_minutes,
+        user_store,
+    )
+
+
+async def validate_token(
+    auth: AuthProvider = Depends(get_auth_provider),
+    token: str = Depends(oauth2_scheme),
+) -> UserInDB:
+    try:
+        user = await auth.validate_token(token)
+    except AuthError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials: %s" % exc,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
+
 
 async def get_existing_user(user_store: UserStore, cpf: str) -> User:
     user = await user_store.get(cpf)
@@ -44,12 +87,33 @@ async def get_existing_user(user_store: UserStore, cpf: str) -> User:
     return user
 
 
+@app.post("/%s" % token_url, response_model=Token)
+async def login_for_access_token(
+    auth: AuthProvider = Depends(get_auth_provider),
+    form_data: OAuth2PasswordRequestForm = Depends(),
+):
+    try:
+        token = await auth.auth_user(form_data.username, form_data.password)
+    except AuthError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password: %s" % repr(exc),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return token
+
+
 @app.get("/users", response_model=List[User])
 async def users_get_all(user_store: UserStore = Depends(get_user_store)):
     return await user_store.get_all()
 
 
-@app.get("/users/{cpf}", responses=response_ok_or_notfound)
+@app.get("/users/me", response_model=User)
+async def auth_test(user: str = Depends(validate_token)):
+    return user
+
+
+@app.get("/users/{cpf}", response_model=User, responses=response_ok_or_notfound)
 async def users_get_one(cpf: str, user_store: UserStore = Depends(get_user_store)):
     return await get_existing_user(user_store, cpf)
 
@@ -57,6 +121,7 @@ async def users_get_one(cpf: str, user_store: UserStore = Depends(get_user_store
 @app.post(
     "/users",
     status_code=status.HTTP_201_CREATED,
+    response_model=User,
     responses={
         status.HTTP_201_CREATED: {"model": User},
         status.HTTP_409_CONFLICT: {
@@ -77,6 +142,7 @@ async def users_post(user: User, user_store: UserStore = Depends(get_user_store)
 
 @app.put(
     "/users/{cpf}",
+    response_model=User,
     responses=response_ok_or_notfound
     | {
         status.HTTP_400_BAD_REQUEST: {
@@ -100,7 +166,7 @@ async def users_put(
     return user
 
 
-@app.delete("/users/{cpf}", responses=response_ok_or_notfound)
+@app.delete("/users/{cpf}", response_model=User, responses=response_ok_or_notfound)
 async def users_delete(cpf: str, user_store: UserStore = Depends(get_user_store)):
     # will throw exception if user does not exist
     user = await get_existing_user(user_store, cpf)
