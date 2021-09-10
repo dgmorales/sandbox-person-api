@@ -4,3 +4,6 @@ coverage:
       default:
         target: 90%
         threshold: 5%  # Allow the coverage to drop by X%
+    patch:
+      default:
+        target: 90%
