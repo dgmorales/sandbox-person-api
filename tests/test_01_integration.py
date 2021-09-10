@@ -6,6 +6,7 @@ import subprocess
 import secrets
 from fastapi import status
 from fastapi.testclient import TestClient
+from requests.models import Response
 from personapi.api import app, get_settings, token_url
 from personapi.utils import Settings
 from personapi.auth import PasswordHasher, Token
@@ -99,15 +100,24 @@ def testclient(testdb_primed, testsettings):
     return TestClient(app)
 
 
-@pytest.fixture(scope="module")
-def testtoken_header(testclient):
+def http_login_request(
+    testclient: TestClient, username: str, password: str
+) -> Response:
     auth_data = {
         "grant_type": "password",
-        "username": users[test_auth_user_index]["cpf"],
-        "password": test_auth_user_password,
+        "username": username,
+        "password": password,
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     response = testclient.post("/%s" % token_url, headers=headers, data=auth_data)
+    return response
+
+
+@pytest.fixture(scope="module")
+def testauth_header(testclient: TestClient) -> dict:
+    response = http_login_request(
+        testclient, users[test_auth_user_index]["cpf"], test_auth_user_password
+    )
     if response.status_code == status.HTTP_200_OK:
         token_dict = response.json()
         token = Token(**token_dict)
@@ -116,9 +126,16 @@ def testtoken_header(testclient):
         return {}
 
 
-def test_get_user_me(testclient, testtoken_header):
+def test_invalid_credentials(testclient: TestClient):
+    response = http_login_request(
+        testclient, users[test_auth_user_index]["cpf"], test_auth_user_password + "blah"
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_get_user_me(testclient: TestClient, testauth_header: dict):
     user = users[0]
-    response = testclient.get("/users/me", headers=testtoken_header)
+    response = testclient.get("/users/me", headers=testauth_header)
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == user
 
