@@ -997,11 +997,11 @@
         },
         "ipykernel": {
             "hashes": [
-                "sha256:0bf7a9563e5ff053049c95d18b1488f4307cf334e3381020a83983274295d625",
-                "sha256:72d62a362777ee91eb990b90e55bf4375621aac478a34bf49c0ed1f3ae64167f"
+                "sha256:299795cca2c4aed7e233e3ad5360e1c73627fd0dcec11a9e75d5b2df43629353",
+                "sha256:f43de132feea90f86d68c51013afe9694f9415f440053ec9909dd656c75b04b5"
             ],
             "index": "pypi",
-            "version": "==6.4.0"
+            "version": "==6.5.0"
         },
         "ipython": {
             "hashes": [
@@ -1010,13 +1010,6 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==7.29.0"
-        },
-        "ipython-genutils": {
-            "hashes": [
-                "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8",
-                "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"
-            ],
-            "version": "==0.2.0"
         },
         "itsdangerous": {
             "hashes": [
