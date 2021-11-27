@@ -29,6 +29,7 @@ bandit = "*"
 black = "*"
 locust = "*"
 mypy = "*"
+typer = "*"
 
 [requires]
 python_version = "3.9"
