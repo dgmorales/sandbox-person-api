@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-person-api
+  labels:
+    app: python-person-api
+spec:
+  selector:
+    matchLabels:
+      app: python-person-api
+  template:
+    metadata:
+      labels:
+        app: python-person-api
+    spec:
+      containers:
+        - name: python-person-api
+          image: python-person-api/person-api:v0.9.3
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-person-api
+spec:
+  selector:
+    app: python-person-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000

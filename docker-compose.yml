@@ -2,6 +2,7 @@ version: "3.9"
 services:
   personapi:
     build: .
+    image: python-person-api/person-api:v0.9.0
     ports:
       - "8000:8000"
     environment:

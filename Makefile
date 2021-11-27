@@ -1,8 +1,11 @@
 build: requirements.txt
-	docker compose build
+	nerdctl -n k8s.io compose build
 
 build-api: requirements.txt
-	docker build -t python-person-api:latest .
+	nerdctl -n k8s.io build -t python-person-api/person-api:v0.9.3 .
+
+build-db:
+	nerdctl -n k8s.io build -f Dockerfile.db -t python-person-api/person-db:v0.0.1 .
 
 run-python:
 	NEW_RELIC_CONFIG_FILE=newrelic.ini pipenv run newrelic-admin run-program uvicorn personapi.api:app
@@ -24,7 +27,7 @@ checks:
 full-check: check run-tests
 
 up:
-	docker compose up
+	nerdctl compose up
 
 down:
-	docker compose down
+	nerdctl compose down
