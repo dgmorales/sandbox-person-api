@@ -1,0 +1,29 @@
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: people-management
+  description: A fictious domain for people management
+spec:
+  owner: user:dgmorales
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: people-registry
+  description: A fictious system for registering people
+spec:
+  owner: user:dgmorales
+  domain: people-management
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: person-api
+  description: A small test application recording information about people
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user:dgmorales
+  system: people-registry
+  providesApis:
+    - person-api
