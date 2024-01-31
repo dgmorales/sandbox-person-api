@@ -12,6 +12,7 @@ ENV NEW_RELIC_CONFIG_FILE=newrelic.ini
 # That way when we change the app's code, the image build is faster, because the
 # layer that installed the requirements is not rebuilt.
 
+RUN apk add build-base libffi-dev
 COPY requirements.txt /app/
 WORKDIR /app
 RUN pip install -r requirements.txt

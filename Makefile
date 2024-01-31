@@ -1,5 +1,5 @@
 build: requirements.txt
-	docker compose build
+	docker-compose build
 
 build-api: requirements.txt
 	docker build -t python-person-api:latest .
@@ -24,7 +24,7 @@ checks:
 full-check: check run-tests
 
 up:
-	docker compose up
+	docker-compose up
 
 down:
-	docker compose down
+	docker-compose down
